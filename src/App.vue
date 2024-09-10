@@ -1,5 +1,5 @@
 <template>
-  <CO5/>
+  <CO5 StartNote="C" Key="A"/>
 </template>
 
 <script>

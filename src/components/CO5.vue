@@ -11,12 +11,16 @@ export default {
       notes: ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'],
       // frank can go down and eat breakfast
       magic: ['F', 'C', 'G', 'D', 'A', 'E', 'B'],
+      interval: [2, 2, 1, 2, 2, 2, 1],
       accidents: ['♯', '♭', '#', 'b'],
-      key: 'C'
     }
   },
   props: {
-    startNote: {
+    StartNote: {
+      type: String,
+      default: 'C'
+    },
+    Key:{
       type: String,
       default: 'C'
     }
@@ -27,9 +31,6 @@ export default {
     },
     prev(note, interval = 1) {
       return this.notes[(this.notes.indexOf(note) - interval + 12) % 12];
-    },
-    isMajor() {
-
     },
     isSharp(note) {
       if (note.length === 2 && this.accidents.includes(note[1])) {
@@ -51,7 +52,10 @@ export default {
       }
       return note
     },
-    parse(note) {
+  },
+  computed: {
+    startNote(){
+      let note = this.StartNote
       if (typeof note === 'number' && note >= 0 && note < this.notes.length ) {
         return this.notes[note]
       }
@@ -66,12 +70,27 @@ export default {
         }
       }
       console.log('Invalid note: ' + note)
+      return 'C'      
     },
 
-  },
-  computed: {
+    key(){
+      let note = this.Key
+      if (typeof note === 'string' && note.length > 0 && note.length <= 2) {
+        if (note.length === 1 && this.notes.includes(note.toUpperCase())){
+          return note
+        }
+        if (note.length === 2) {
+          if (this.notes.includes(note[0].toUpperCase()) && this.accidents.includes(note[1])) {
+            return `${note[0]}${note[1].toLowerCase()}`
+          }
+        }
+      }
+      console.log('Invalid Key: ' + note)
+      return 'C'
+    },
+
     cycle() {
-      let cycle = {"Major": [this.key], "Minor": [this.prev(this.key, 3)]}
+      let cycle = {"Major": [this.startNote], "Minor": [this.prev(this.startNote, 3)]}
       for (let index = 0; index < 11; index++) {
         let prev = cycle["Major"].slice(-1)[0]
         cycle["Major"].push(this.next(prev,7))
@@ -88,10 +107,30 @@ export default {
       }
       return cycle
     },
+
+    isMajor() {
+      return (this.key === this.key.toUpperCase())?true:false
+    },
+
+    scale(){
+      let scale = {}
+      if (this.isMajor) {
+        scale = {"Major": [this.key], "Minor": [this.prev(this.key, 3).toLowerCase()]}
+      }else{
+        scale = {"Major": [this.next(this.key.toUpperCase(), 3)], "Minor": [this.key]}
+      }
+      for (let index = 0; index < 6; index++) {
+        let prev = scale["Major"].slice(-1)[0]
+        let cur = this.next(prev, this.interval[index])
+        scale["Major"].push(cur)
+        scale["Minor"].push(this.prev(cur, 3).toLowerCase())
+      }
+      return scale
+    }
+
   },
   mounted() {
-    this.key = this.parse(this.startNote)
-    console.log(this.cycle)
+    console.log(this.scale)
   },
 }
 </script>
