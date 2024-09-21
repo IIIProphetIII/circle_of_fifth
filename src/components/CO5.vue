@@ -1,9 +1,10 @@
 <template>
-  <div>
+  <div ref="container">
   </div>
 </template>
 
 <script>
+import * as d3 from 'd3'
 export default {
   name: 'CO5',
   data () {
@@ -51,6 +52,57 @@ export default {
         }
       }
       return note
+    },
+    enableUI(){
+      const width = window.innerWidth/2
+      const height = Math.min(width, window.innerHeight);
+      const radius = Math.min(width, height) / 2;
+      const arcMajor = d3.arc().innerRadius(radius * 0.75).outerRadius(radius - 1).padAngle(0.02)
+      const arcMinor = d3.arc().innerRadius(radius * 0.50).outerRadius(radius * 0.75).padAngle(0.03)
+      const pie = d3.pie().sort(null).value(1).padAngle(1 / radius)
+      const rotationAngle = Math.PI / this.cycle.Major.length
+      const svg = d3.create('svg')
+        .attr('height', height)
+        .attr('width', width)
+        .attr('viewBox', [-width / 2, -height / 2, width, height])
+        .style('style', 'max-width: 100%; height: auto;')
+
+      svg.append('g')
+        .selectAll('outer')
+        .data(pie(this.cycle.Major))
+        .join("path")
+        .attr("fill", '#72ac51').attr("d", (d)=>arcMajor({
+          startAngle: d.startAngle - rotationAngle,
+          endAngle: d.endAngle - rotationAngle
+        }))
+      svg.append('g')
+        .selectAll('outer')
+        .data(pie(this.cycle.Major))
+        .join("text")
+        .attr("transform", (d) => `translate(${arcMajor.centroid({
+            startAngle: d.startAngle - rotationAngle,
+            endAngle: d.endAngle - rotationAngle
+          })})`)
+        .attr("class", 'outer')
+        .text((d)=>d.data)
+
+      svg.append('g')
+        .selectAll('inner')
+        .data(pie(this.cycle.Minor))
+        .join("path")
+        .attr("fill", '#d4e6ca').attr("d", (d)=>arcMinor({
+          startAngle: d.startAngle - rotationAngle,
+          endAngle: d.endAngle - rotationAngle
+        }))
+      svg.append('g').selectAll('inner').data(pie(this.cycle.Minor)).join("text")
+        .attr("transform", (d) => `translate(${arcMinor.centroid({
+          startAngle: d.startAngle - rotationAngle,
+          endAngle: d.endAngle - rotationAngle
+        })})`)
+        .attr("class", 'inner')
+        .text((d)=>d.data)
+
+      this.$refs.container.append(svg.node());
     },
   },
   computed: {
@@ -130,24 +182,22 @@ export default {
 
   },
   mounted() {
-    console.log(this.scale)
+    console.log(this.cycle)
+    this.enableUI()
   },
 }
 </script>
 
-<style scoped>
-h3 {
-  margin: 40px 0 0;
+<style scope>
+.outer {
+  text-anchor: middle;
+  font-weight: bold;
+  fill: #ffffff;
+  font-size: 25px;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+.inner {
+  text-anchor: middle;
+  fill: #555555;
+  font-size: 20px;
 }
 </style>
