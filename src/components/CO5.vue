@@ -1,5 +1,5 @@
 <template>
-  <div ref="container">
+  <div class="container" ref="container">
   </div>
 </template>
 
@@ -187,16 +187,17 @@ export default {
   },
 }
 </script>
-
-<style scope>
-.outer {
+<style scoped>
+.container {
+  font-family: "Open Sans";
   text-anchor: middle;
   font-weight: bold;
+}
+.container >>> .outer {
   fill: #ffffff;
   font-size: 25px;
 }
-.inner {
-  text-anchor: middle;
+.container >>> .inner {
   fill: #555555;
   font-size: 20px;
 }
